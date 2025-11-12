@@ -1,0 +1,107 @@
+/* ============================
+   전체 공통 스타일
+============================ */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');
+
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background-color: #f4f6f9;
+  color: #333;
+  margin: 0;
+  padding: 0;
+  text-align: center;
+}
+
+.container {
+  max-width: 600px;
+  margin: 80px auto;
+  padding: 40px;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+
+h1, h2 {
+  margin-bottom: 25px;
+  font-weight: 600;
+  color: #222;
+}
+
+/* 버튼 기본형 */
+button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 25px;
+  font-size: 16px;
+  margin: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+/* 숨김용 */
+.hidden {
+  display: none;
+}
+
+/* ============================
+   설문 페이지 (survey.html)
+============================ */
+.score-btn {
+  background-color: #6c757d;
+}
+
+.score-btn:hover {
+  background-color: #495057;
+}
+
+/* ============================
+   테마 선택 페이지 (theme.html)
+============================ */
+.theme-btn {
+  display: inline-block;
+  padding: 12px 25px;
+  margin: 8px;
+  border: 1px solid #aaa;
+  border-radius: 8px;
+  background-color: white;
+  color: #333;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.theme-btn:hover {
+  background-color: #f0f0f0;
+}
+
+.theme-btn.selected {
+  background-color: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+#submit-btn {
+  display: block;
+  margin: 40px auto 0;
+  background-color: #28a745;
+}
+
+#submit-btn:hover {
+  background-color: #218838;
+}
+
+/* ============================
+   포트폴리오 페이지 (portfolio.html)
+============================ */
+.return-btn {
+  background-color: #17a2b8;
+}
+
+.return-btn:hover {
+  background-color: #138496;
+}
