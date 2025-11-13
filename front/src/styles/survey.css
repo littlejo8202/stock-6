@@ -1,0 +1,70 @@
+.survey-container {
+    margin: 0;
+    height: 100vh;
+    background-color: #1e1e1e;
+    color: #d4d4d4;
+    font-family: 'Consolas', 'Noto Sans KR', sans-serif;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 20px;
+}
+
+.question {
+    font-size: 30px;
+    font-weight: bold;
+    margin-bottom: 35px;
+    color: #569cd6;
+    text-align: center;
+}
+
+.choices {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 50px;
+    width: 90%;
+    max-width: 700px;
+}
+
+.choice {
+    background-color: #333333;
+    color: #d4d4d4;
+    border: 1px solid #444444;
+    padding: 20px 25px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 20px;
+    text-align: left;
+    transition: all 0.2s;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+}
+
+.choice:hover {
+    background-color: #4a4a4a;
+}
+
+.choice.selected {
+    background-color: #569cd6;
+    color: #ffffff;
+    border-color: #569cd6;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.7);
+}
+
+.next-btn {
+    background-color: #6a9955;
+    color: white;
+    border: none;
+    padding: 15px 40px;
+    border-radius: 6px;
+    font-size: 20px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    font-weight: bold;
+}
+
+.next-btn:hover {
+    background-color: #5c7d4c;
+}

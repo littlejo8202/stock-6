@@ -1,0 +1,67 @@
+html, body, #root {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+}
+
+.home-container {
+    margin: 0;
+    height: 100vh;
+    background-color: #000;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Noto Sans KR', sans-serif;
+    position: relative;
+    overflow: hidden;
+}
+
+.title {
+    font-size: 52px;
+    color: #4da3ff; /* 밝은 파란색 */
+    margin-bottom: 20px;
+    letter-spacing: 3px;
+}
+
+.subtitle {
+    font-size: 25px;
+    color: #e6e6e6;
+    margin-bottom: 45px;
+}
+
+.start-survey-button {
+    background-color: #ccc;
+    color: black;
+    border: none;
+    padding: 15px 38px;
+    font-size: 22px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.start-survey-button:hover {
+    background-color: #aaa;
+}
+
+/* 좌하단 로고 */
+.logo {
+    position: absolute;
+    bottom: 25px;
+    left: 25px;
+    width: 210px;
+    opacity: 1;
+}
+
+/* 우하단 문구 */
+.team-text {
+    position: absolute;
+    bottom: 40px;
+    right: 25px;
+    font-size: 20px;
+    color: #ddd;
+    opacity: 0.85;
+    font-weight: 400;
+}
