@@ -5,6 +5,8 @@ import '../styles/portfolio.css';
 
 function Portfolio() {
     const location = useLocation();
+    const { portfolioData } = location.state || {};
+    console.log("Received portfolio data:", portfolioData);
     const navigate = useNavigate();
 
     const handleOppositeTheme = () => {
@@ -41,7 +43,7 @@ function Portfolio() {
                 </div>
 
                 <div class="bottom-buttons">
-                    <button class="nav-btn" onClick={handleOppositeTheme}>반대 성향의 테마 알아보기</button>
+                    <button class="nav-btn-op" onClick={handleOppositeTheme}>반대 성향의 테마 알아보기</button>
                     <button class="nav-btn" onClick={() => navigate(-1)}>테마 선택 화면으로 돌아가기</button>
                     <button class="nav-btn" onClick={() => navigate('/')}>종료</button>
                 </div>

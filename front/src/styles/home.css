@@ -11,7 +11,7 @@ html, body, #root {
     color: white;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
     font-family: 'Noto Sans KR', sans-serif;
     position: relative;
@@ -20,7 +20,11 @@ html, body, #root {
 
 .title {
     font-size: 52px;
-    color: #4da3ff; /* 밝은 파란색 */
+    background: linear-gradient(90deg, #a0ceff, #4da3ff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-top: 380px;
     margin-bottom: 20px;
     letter-spacing: 3px;
 }

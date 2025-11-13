@@ -1,9 +1,48 @@
-import React from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import "../styles/theme.css";
 
 function Traditional() {
+    const navigate = useNavigate();
+    const [selectedThemes, setSelectedThemes] = useState([]);
+
+    const themes = [
+        "정유, 석유, 가스 에너지", "철강, 금속, 기초소재", "금융", "소비재", "전기, 가스, 수도",
+        "부동산, 건설", "통신", "자동차, 조선 제조", "헬스케어, 전통제약", "화학산업"
+    ]
+
+    const toggleTheme = (theme) => {
+        if (selectedThemes.includes(theme)) {
+            setSelectedThemes(selectedThemes.filter(t => t !== theme));
+        } else {
+            setSelectedThemes([...selectedThemes, theme]);
+        }
+    };
+
+    const handleCreatePortfolio = async () => {
+        if (selectedThemes.length === 0) {
+            alert("하나 이상의 테마를 선택해주세요.");
+            return;
+        }
+
+        // const response = await fetch("/api/portfolio", {
+        //     method: "POST",
+        //     headers: { "Content-Type": "application/json" },
+        //     body: JSON.stringify({ themes: selectedThemes })
+        // });
+
+        // const data = await response.json();
+
+        const mockData = {
+            themes: selectedThemes,
+        }
+
+        navigate('/portfolio', { state: { portfolioData: mockData } });
+
+        // navigate('/portfolio', { state: { portfolioData: data } });
+    };
+
     return (
         <>
             <Helmet>
@@ -16,23 +55,21 @@ function Traditional() {
                 </h1>
 
                 <div className="theme-container">
-                    <h2>해당 성향의 테마 ETF 목록</h2>
+                    <h2>전통 성향의 테마 ETF 목록</h2>
                     <div class="theme-button-container">
-                        <button class="theme-btn">정유, 석유, 가스 에너지</button>
-                        <button class="theme-btn">철강, 금속, 기초소재</button>
-                        <button class="theme-btn">금융</button>
-                        <button class="theme-btn">소비재</button>
-                        <button class="theme-btn">전기, 가스, 수도</button>
-                        <button class="theme-btn">부동산, 건설</button>
-                        <button class="theme-btn">통신</button>
-                        <button class="theme-btn">자동차, 조선 제조</button>
-                        <button class="theme-btn">헬스케어, 전통제약</button>
-                        <button class="theme-btn">화학산업</button>
-
+                        {themes.map((theme, index) => (
+                            <button
+                                key={index}
+                                className={`theme-btn ${selectedThemes.includes(theme) ? 'selected' : ''}`}
+                                onClick={() => toggleTheme(theme)}
+                            >
+                                {theme}
+                            </button>
+                        ))}
                     </div>
                 </div>
 
-                <button className="result-btn" onClick={() => navigate('/portfolio')}>
+                <button className="result-btn" onClick={handleCreatePortfolio}>
                     선택한 테마로 포트폴리오 만들기
                 </button>
             </div>
