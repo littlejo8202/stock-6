@@ -38,7 +38,7 @@ function Portfolio() {
                     </div>
 
                     <div class="profit-text" id="profitText">
-                    해당 포트폴리오의 [기간] 수익률은 [ ]입니다.
+                    해당 포트폴리오의 [기간] 수익률은 [ ] 위험성은 []입니다.
                     </div>
                 </div>
 
