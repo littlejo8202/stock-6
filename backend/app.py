@@ -92,37 +92,18 @@ def get_period_dates(period_str):
 
 # --- [새 기능 1] Drawdown 계산 함수 ---
 def calculate_drawdown(portfolio_series):
-    """
-    포트폴리오 가치 시계열을 받아 Drawdown을 계산합니다.
-    출력: (드로우다운 시계열, 최대 드로우다운 값, 최대 드로우다운 날짜)
-    """
-    # 1. 누적 최고가(Cumulative Max) 계산
     cumulative_max = portfolio_series.cummax()
-    # 2. 드로우다운 (DD) 계산: (현재가 - 누적최고가) / 누적최고가
     dd_series = (portfolio_series - cumulative_max) / cumulative_max
-    
-    # 3. 최대 드로우다운(MDD) 및 날짜 계산
-    mdd = dd_series.min() # MDD는 가장 낮은 값 (음수)
-    mdd_date = dd_series.idxmin() # MDD가 발생한 날짜
-    
-    # (NaN 값은 0으로 채움, 백분율(%)로 변환)
+    mdd = dd_series.min() 
+    mdd_date = dd_series.idxmin() 
     return (dd_series * 100).round(2).fillna(0), f"{mdd * 100:.2f}%", mdd_date.strftime('%Y-%m-%d')
 
 # --- [새 기능 2] Rolling Volatility 계산 함수 ---
 ROLLING_WINDOW = 30 # 30일 이동 변동성
 def calculate_rolling_volatility(portfolio_series, window=ROLLING_WINDOW):
-    """
-    포트폴리오 가치 시계열을 받아 롤링 변동성을 계산합니다.
-    출력: 롤링 변동성 시계열 (연율화)
-    """
-    # 1. 일일 수익률 계산
     daily_returns = portfolio_series.pct_change()
-    # 2. 30일 이동 표준편차 계산
     rolling_std = daily_returns.rolling(window=window).std()
-    # 3. 연율화 (1년 거래일 약 252일)
     rolling_vol_series = rolling_std * np.sqrt(252)
-    
-    # (NaN 값은 0으로 채움, 백분율(%)로 변환)
     return (rolling_vol_series * 100).round(2).fillna(0)
 
 
@@ -132,7 +113,7 @@ def test_api():
     return jsonify({ "message": "백엔드 서버가 응답합니다!" })
 
 # --- API 2: 핵심 백테스팅 API (응답 형식 수정) ---
-@app.route('/api/backtest', methods=['POST', 'OPTIONS'])
+@app.route('/api/backtest', methods=['POST', 'OPTIONS']) # (OPTIONS 추가됨)
 def handle_backtest():
     try:
         data = request.json
@@ -191,17 +172,22 @@ def handle_backtest():
 
         close_data = close_data.ffill().bfill() 
         normalized_data = (close_data / close_data.iloc[0]) * 100
-        portfolio_series = normalized_data.mean(axis=1) # (이것이 피드백에서 말한 '포트폴리오')
+        
+        # --- (!! 70:30 비중 수정 !!) ---
+        # 1. '테마' 종목들만 1/n로 섞어서 '테마 포트폴리오'를 만듦
+        # (만약 '테마'와 '기본'에 중복 티커가 있어도, close_data에서 가져오므로 문제 없음)
+        theme_portfolio = normalized_data[theme_tickers].mean(axis=1)
+        
+        # 2. '기본 자산' 종목들만 1/n로 섞어서 '기본 자산 포트폴리오'를 만듦
+        base_portfolio = normalized_data[base_asset_tickers].mean(axis=1)
+        
+        # 3. 두 포트폴리오를 70:30으로 섞어서 최종 포트폴리오를 만듦
+        portfolio_series = (theme_portfolio * 0.7) + (base_portfolio * 0.3)
+        # --- (!! 70:30 비율로 수정 완료 !!) ---
 
         # --- 7. 수익률 및 위험 지표 계산 ---
-        
-        # 7-1. 총 수익률
         total_return_pct = (portfolio_series.iloc[-1] / portfolio_series.iloc[0] - 1) * 100
-
-        # 7-2. (새 기능) Drawdown 계산
         dd_series, mdd_value, mdd_date = calculate_drawdown(portfolio_series)
-        
-        # 7-3. (새 기능) Rolling Volatility 계산
         rolling_vol_series = calculate_rolling_volatility(portfolio_series)
         
         # --- 8. (수정) 프론트엔드가 원하는 새 JSON 형식으로 응답 ---
@@ -209,15 +195,13 @@ def handle_backtest():
             "dates": portfolio_series.index.strftime('%Y-%m-%d').tolist(),
             "values": portfolio_series.round(2).tolist(),
             "totalReturn": f"{total_return_pct:.2f}%",
-            
-            # (기존 risk 키 대신 새로운 위험 지표 4개 추가)
             "maxDrawdown": {
                 "value": mdd_value,
                 "date": mdd_date
             },
             "drawdownSeries": dd_series.tolist(),
             "rollingVolatilitySeries": rolling_vol_series.tolist(),
-            "rollingVolatilityPeriod": ROLLING_WINDOW # (프론트에서 '30일' 표시용)
+            "rollingVolatilityPeriod": ROLLING_WINDOW 
         }
         
         print(f"백테스팅 성공. 총 수익률: {total_return_pct:.2f}%, MDD: {mdd_value}")
@@ -233,4 +217,3 @@ def handle_backtest():
 # --- 서버 실행 ---
 if __name__ == '__main__':
     app.run(port=5000, debug=True)
-
