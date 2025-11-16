@@ -33,7 +33,8 @@ function Innovation() {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ 
-                        themes: selectedThemes 
+                        themes: selectedThemes,
+                        period: "1m"
                     }),
                 }
             );
