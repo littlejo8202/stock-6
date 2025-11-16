@@ -16,6 +16,7 @@ function Traditional() {
         if (selectedThemes.includes(theme)) {
             setSelectedThemes(selectedThemes.filter(t => t !== theme));
         } else {
+            // [버그 수정] selectedModules -> selectedThemes
             setSelectedThemes([...selectedThemes, theme]);
         }
     };
@@ -26,31 +27,15 @@ function Traditional() {
             return;
         }
 
-        try {
-            const response = await fetch(
-                "https://backtesting-t1xh.onrender.com/api/backtest",
-                {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ 
-                        themes: selectedThemes,
-                        period: "1m"
-                    }),
-                }
-            );
-
-            const data = await response.json();
-
-            navigate('/portfolio', { state: { portfolioData: data } });
-        } catch (err) {
-            console.error(err);
-        }        
+        // --- (수정) API 호출 로직 '삭제' ---
+        // 'themes'만 Portfolio 페이지로 넘깁니다.
+        navigate('/portfolio', { state: { themes: selectedThemes } });
     };
 
     return (
         <>
             <Helmet>
-                <meta charset="UTF-8" />
+                <meta charSet="UTF-8" /> 
                 <title>테마 선택</title>
             </Helmet>
             <div className="result-container">
@@ -60,7 +45,8 @@ function Traditional() {
 
                 <div className="theme-container">
                     <h2>전통 성향의 테마 ETF 목록</h2>
-                    <div class="theme-button-container">
+                     {/* (수정) 'class=' -> 'className=' */}
+                    <div className="theme-button-container">
                         {themes.map((theme, index) => (
                             <button
                                 key={index}
