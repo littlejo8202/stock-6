@@ -4,24 +4,20 @@ import pandas as pd
 import os
 import yfinance as yf
 from datetime import date, timedelta
-import numpy as np  # <-- (1) 위험성 계산을 위해 numpy 추가
+import numpy as np 
 
 # --- 기본 설정 ---
 app = Flask(__name__)
-# (CORS 설정: /api/ 경로의 모든 요청을 모든 도메인(*)에서 허용)
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 DATA_DIR = os.path.join(os.path.dirname(__file__), 'data')
 
-# --- 1. CSV 데이터 미리 로드 (테마, 원자재, 채권) ---
-base_asset_tickers = [] # 기본 자산 티커 리스트 (전역 변수)
-
+# --- 1. CSV 데이터 미리 로드 ---
+base_asset_tickers = [] 
 try:
-    # 1-1. 테마 ETF 로드
     theme_etf_path = os.path.join(DATA_DIR, '테마ETF.csv')
     df_theme_etf = pd.read_csv(theme_etf_path)
     print("--- 서버 준비: '테마ETF.csv' 파일 로드 성공 ---")
     
-    # 1-2. 원자재 ETF 로드
     commodities_path = os.path.join(DATA_DIR, '원자재ETF.csv')
     df_commodities = pd.read_csv(commodities_path)
     base_commodities = df_commodities[
@@ -30,7 +26,6 @@ try:
     base_asset_tickers.extend(base_commodities)
     print(f"--- 서버 준비: '원자재ETF.csv' 로드 성공. 기본 자산 {base_commodities} 추가 ---")
 
-    # 1-3. 채권 ETF 로드
     bonds_path = os.path.join(DATA_DIR, '채권ETF.csv')
     df_bonds = pd.read_csv(bonds_path)
     base_bonds = df_bonds[
@@ -39,7 +34,6 @@ try:
     base_asset_tickers.extend(base_bonds)
     print(f"--- 서버 준비: '채권ETF.csv' 로드 성공. 기본 자산 {base_bonds} 추가 ---")
     
-    # 1-4. 기본 자산 리스트 중복 제거
     base_asset_tickers = list(set(base_asset_tickers))
     print(f"--- 서버 준비 완료: 최종 기본 자산 티커: {base_asset_tickers} ---")
     
@@ -54,6 +48,7 @@ except Exception as e:
 
 # --- 2. '번역기' 딕셔너리 생성 ---
 theme_name_translator = {
+    # (이전과 동일)
     "자동화 인공지능": ["AI / 반도체", "인공지능", "로봇/산업"],
     "친환경 에너지": ["ESG", "에너지"],
     "원자력": ["에너지"],
@@ -81,18 +76,54 @@ print("--- 서버 준비 완료: 테마 이름 매핑(번역기) 생성 완료 -
 # --- 3. 기간(period)을 실제 날짜로 변환하는 헬퍼 함수 ---
 def get_period_dates(period_str):
     end_date = date.today()
-    if period_str == "1w": # 1주일
+    if period_str == "1w":
         start_date = end_date - timedelta(weeks=1)
-    elif period_str == "15d": # 15일
+    elif period_str == "15d":
         start_date = end_date - timedelta(days=15)
-    elif period_str == "1m": # 1개월
+    elif period_str == "1m":
         start_date = end_date - timedelta(days=30)
-    elif period_str == "3m": # 3개월
+    elif period_str == "3m":
         start_date = end_date - timedelta(days=90)
-    else: # 기본값 (1개월)
+    else: 
         start_date = end_date - timedelta(days=30)
         
     return start_date.isoformat(), end_date.isoformat()
+
+
+# --- [새 기능 1] Drawdown 계산 함수 ---
+def calculate_drawdown(portfolio_series):
+    """
+    포트폴리오 가치 시계열을 받아 Drawdown을 계산합니다.
+    출력: (드로우다운 시계열, 최대 드로우다운 값, 최대 드로우다운 날짜)
+    """
+    # 1. 누적 최고가(Cumulative Max) 계산
+    cumulative_max = portfolio_series.cummax()
+    # 2. 드로우다운 (DD) 계산: (현재가 - 누적최고가) / 누적최고가
+    dd_series = (portfolio_series - cumulative_max) / cumulative_max
+    
+    # 3. 최대 드로우다운(MDD) 및 날짜 계산
+    mdd = dd_series.min() # MDD는 가장 낮은 값 (음수)
+    mdd_date = dd_series.idxmin() # MDD가 발생한 날짜
+    
+    # (NaN 값은 0으로 채움, 백분율(%)로 변환)
+    return (dd_series * 100).round(2).fillna(0), f"{mdd * 100:.2f}%", mdd_date.strftime('%Y-%m-%d')
+
+# --- [새 기능 2] Rolling Volatility 계산 함수 ---
+ROLLING_WINDOW = 30 # 30일 이동 변동성
+def calculate_rolling_volatility(portfolio_series, window=ROLLING_WINDOW):
+    """
+    포트폴리오 가치 시계열을 받아 롤링 변동성을 계산합니다.
+    출력: 롤링 변동성 시계열 (연율화)
+    """
+    # 1. 일일 수익률 계산
+    daily_returns = portfolio_series.pct_change()
+    # 2. 30일 이동 표준편차 계산
+    rolling_std = daily_returns.rolling(window=window).std()
+    # 3. 연율화 (1년 거래일 약 252일)
+    rolling_vol_series = rolling_std * np.sqrt(252)
+    
+    # (NaN 값은 0으로 채움, 백분율(%)로 변환)
+    return (rolling_vol_series * 100).round(2).fillna(0)
 
 
 # --- API 1: 테스트용 ---
@@ -100,7 +131,7 @@ def get_period_dates(period_str):
 def test_api():
     return jsonify({ "message": "백엔드 서버가 응답합니다!" })
 
-# --- API 2: 핵심 백테스팅 API (기본 자산 섞는 로직 추가) ---
+# --- API 2: 핵심 백테스팅 API (응답 형식 수정) ---
 @app.route('/api/backtest', methods=['POST'])
 def handle_backtest():
     try:
@@ -160,28 +191,36 @@ def handle_backtest():
 
         close_data = close_data.ffill().bfill() 
         normalized_data = (close_data / close_data.iloc[0]) * 100
-        portfolio_series = normalized_data.mean(axis=1)
+        portfolio_series = normalized_data.mean(axis=1) # (이것이 피드백에서 말한 '포트폴리오')
 
-        # 6-7. 최종 수익률 계산
+        # --- 7. 수익률 및 위험 지표 계산 ---
+        
+        # 7-1. 총 수익률
         total_return_pct = (portfolio_series.iloc[-1] / portfolio_series.iloc[0] - 1) * 100
 
-        # --- (2) 위험성(Risk) 계산 로직 추가 ---
-        # 일일 수익률 계산 (첫날 NaN은 제거)
-        daily_returns = portfolio_series.pct_change().dropna()
-        # 일일 수익률의 표준편차(위험) 계산
-        daily_std = daily_returns.std()
-        # 연율화된 위험(Risk) 계산 (1년 거래일 약 252일)
-        annualized_risk = daily_std * np.sqrt(252)
+        # 7-2. (새 기능) Drawdown 계산
+        dd_series, mdd_value, mdd_date = calculate_drawdown(portfolio_series)
         
-        # --- 7. 프론트엔드가 원하는 JSON 형식으로 응답 데이터 가공 ---
+        # 7-3. (새 기능) Rolling Volatility 계산
+        rolling_vol_series = calculate_rolling_volatility(portfolio_series)
+        
+        # --- 8. (수정) 프론트엔드가 원하는 새 JSON 형식으로 응답 ---
         response_data = {
-            "dates": portfolio_series.index.strftime('%Y-m-%d').tolist(),
+            "dates": portfolio_series.index.strftime('%Y-%m-%d').tolist(),
             "values": portfolio_series.round(2).tolist(),
             "totalReturn": f"{total_return_pct:.2f}%",
-            "risk": f"{annualized_risk * 100:.2f}%"  # <-- (3) 응답에 risk 추가
+            
+            # (기존 risk 키 대신 새로운 위험 지표 4개 추가)
+            "maxDrawdown": {
+                "value": mdd_value,
+                "date": mdd_date
+            },
+            "drawdownSeries": dd_series.tolist(),
+            "rollingVolatilitySeries": rolling_vol_series.tolist(),
+            "rollingVolatilityPeriod": ROLLING_WINDOW # (프론트에서 '30일' 표시용)
         }
         
-        print(f"백테스팅 성공. 총 수익률: {total_return_pct:.2f}%, 위험성: {annualized_risk * 100:.2f}%")
+        print(f"백테스팅 성공. 총 수익률: {total_return_pct:.2f}%, MDD: {mdd_value}")
         
         return jsonify(response_data)
 
