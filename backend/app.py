@@ -7,7 +7,7 @@ from datetime import date, timedelta # 날짜 처리를 위함
 
 # --- 기본 설정 ---
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/api/*": {"origins": "*"}})
 DATA_DIR = os.path.join(os.path.dirname(__file__), 'data')
 
 # --- 1. CSV 데이터 미리 로드 (테마, 원자재, 채권) ---
@@ -205,4 +205,5 @@ def handle_backtest():
 
 # --- 서버 실행 ---
 if __name__ == '__main__':
+
     app.run(port=5000, debug=True)
