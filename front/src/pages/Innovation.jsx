@@ -26,21 +26,25 @@ function Innovation() {
             return;
         }
 
-        // const response = await fetch("/api/portfolio", {
-        //     method: "POST",
-        //     headers: { "Content-Type": "application/json" },
-        //     body: JSON.stringify({ themes: selectedThemes })
-        // });
+        try {
+            const response = await fetch(
+                "https://backtesting-t1xh.onrender.com/api/backtest",
+                {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ 
+                        themes: selectedThemes 
+                    }),
+                }
+            );
 
-        // const data = await response.json();
+            const data = await response.json();
 
-        const mockData = {
-            themes: selectedThemes,
-        }
+            navigate('/portfolio', { state: { portfolioData: data } });
 
-        navigate('/portfolio', { state: { portfolioData: mockData } });
-
-        // navigate('/portfolio', { state: { portfolioData: data } });
+        } catch (err) {
+            console.error(err);  
+        }   
     };
 
     return (
