@@ -132,7 +132,7 @@ def test_api():
     return jsonify({ "message": "백엔드 서버가 응답합니다!" })
 
 # --- API 2: 핵심 백테스팅 API (응답 형식 수정) ---
-@app.route('/api/backtest', methods=['POST'])
+@app.route('/api/backtest', methods=['POST', 'OPTIONS'])
 def handle_backtest():
     try:
         data = request.json
@@ -233,3 +233,4 @@ def handle_backtest():
 # --- 서버 실행 ---
 if __name__ == '__main__':
     app.run(port=5000, debug=True)
+
