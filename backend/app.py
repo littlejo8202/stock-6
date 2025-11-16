@@ -4,7 +4,8 @@ import pandas as pd
 import os
 import yfinance as yf # 야후 파이낸스 라이브러리
 from datetime import date, timedelta # 날짜 처리를 위함
-
+import numpy as np
+from scipy.optimize import minimize
 # --- 기본 설정 ---
 app = Flask(__name__)
 CORS(app, resources={r"/api/*": {"origins": "*"}})
@@ -101,6 +102,75 @@ def get_period_dates(period_str):
 @app.route('/api/test', methods=['GET'])
 def test_api():
     return jsonify({ "message": "백엔드 서버가 응답합니다!" })
+# --- 자산 비중 계산 모듈 ---
+def get_equal_weight(n):
+    return np.ones(n) / n
+
+def get_mvp_weight(returns):
+    cov = returns.cov()
+    n = len(cov)
+    w0 = np.ones(n) / n
+
+    def var(w):
+        return w.T @ cov @ w
+
+    res = minimize(var, w0, bounds=[(0,1)]*n,
+                   constraints={'type':'eq','fun':lambda w: w.sum()-1})
+    return res.x
+
+def get_risk_parity_weight(returns):
+    cov = returns.cov()
+    n = len(cov)
+
+    def loss(w):
+        mrc = cov @ w
+        rc = w * mrc
+        return ((rc - rc.mean())**2).sum()
+
+    w0 = np.ones(n)/n
+    res = minimize(loss, w0, bounds=[(0,1)]*n,
+                   constraints={'type':'eq','fun':lambda w: w.sum()-1})
+    return res.x
+
+def get_max_sharpe_weight(returns):
+    mu = returns.mean()
+    cov = returns.cov()
+    n = len(mu)
+
+    def neg_sharpe(w):
+        ret = w @ mu
+        vol = np.sqrt(w.T @ cov @ w)
+        return -(ret / vol)
+
+    w0 = np.ones(n)/n
+    res = minimize(neg_sharpe, w0, bounds=[(0,1)]*n,
+                   constraints={'type':'eq','fun':lambda w: w.sum()-1})
+    return res.x
+
+# --- 자산 비중 분산 기반 전략 선택 --- 
+
+def select_most_diversified_strategy(returns):
+    strategies = {
+        "equal": lambda: get_equal_weight(returns.shape[1]),
+        "mvp": lambda: get_mvp_weight(returns),
+        "risk_parity": lambda: get_risk_parity_weight(returns),
+        "max_sharpe": lambda: get_max_sharpe_weight(returns)
+    }
+    
+    best_name = None
+    best_w = None
+    lowest_w_var = float("inf")
+
+    for name, fn in strategies.items():
+        w = fn()
+        w_var = np.var(w)   # 자산배분의 분산
+
+        if w_var < lowest_w_var:
+            best_name = name
+            lowest_w_var = w_var
+            best_w = w
+
+    return best_name, best_w
 
 # --- API 2: 핵심 백테스팅 API (기본 자산 섞는 로직 추가) ---
 @app.route('/api/backtest', methods=['POST'])
@@ -173,20 +243,22 @@ def handle_backtest():
 
         # 6-4. (중요) 데이터 정제: 비어있는 값(NaN) 채우기
         close_data = close_data.ffill().bfill() 
+        returns = close_data.pct_change().dropna()
 
-        # 6-5. (핵심) 수익률 계산 (첫날 100으로 정규화)
-        normalized_data = (close_data / close_data.iloc[0]) * 100
+        # ------- 전략 선택 (핵심) -------
+        method, weights = select_most_diversified_strategy(returns)
         
-        # 6-6. (핵심) 포트폴리오 계산 (모든 자산을 동일 비중으로 평균)
-        portfolio_series = normalized_data.mean(axis=1)
+        # ------- 포트폴리오 계산 -------
+        normalized = (close_data / close_data.iloc[0]) * 100
+        portfolio = (normalized * weights).sum(axis=1)
 
         # 6-7. 최종 수익률 계산
-        total_return_pct = (portfolio_series.iloc[-1] / portfolio_series.iloc[0] - 1) * 100
+        total_return_pct = (portfolio.iloc[-1] / portfolio.iloc[0] - 1) * 100
 
         # --- 7. 프론트엔드가 원하는 JSON 형식으로 응답 데이터 가공 ---
         response_data = {
-            "dates": portfolio_series.index.strftime('%Y-%m-%d').tolist(),
-            "values": portfolio_series.round(2).tolist(),
+            "dates": portfolio.index.strftime('%Y-%m-%d').tolist(),
+            "values": portfolio.round(2).tolist(),
             "totalReturn": f"{total_return_pct:.2f}%"
         }
         
