@@ -1,0 +1,26 @@
+﻿종목명,현재가,거래량,원자재_분류,종목코드,YAHOO_TICKER,포트폴리오_구분
+TIGERKRX금현물,"13,435","2,466,698",금(Gold),0072R0,0072R0.KS,기본 구성
+ACEKRX금현물,"28,180","3,987,610",금(Gold),411060,411060.KS,기본 구성
+KODEX구리선물(H),"8,145","114,131",구리(Copper),138910,138910.KS,부가 구성
+TIGER금은선물(H),"17,670","36,289",금(Gold),139320,139320.KS,부가 구성
+KODEX골드선물(H),"24,020","224,242",금(Gold),132030,132030.KS,부가 구성
+KODEX골드선물인버스(H),"3,630","8,918",금(Gold),280940,280940.KS,부가 구성
+TIGER농산물선물Enhanced(H),"5,280","10,862",농산물(Agriculture),137610,137610.KS,부가 구성
+KODEX3대농산물선물(H),"8,120","39,679",농산물(Agriculture),271060,271060.KS,부가 구성
+KODEXWTI원유선물인버스(H),"4,145","82,913",원유(Oil),271050,271050.KS,부가 구성
+TIGER원유선물Enhanced(H),"4,030","108,431",원유(Oil),130680,130680.KS,부가 구성
+KODEX콩선물(H),"11,880","21,591",농산물(Agriculture),138920,138920.KS,부가 구성
+KODEXWTI원유선물(H),"14,055","197,414",원유(Oil),261220,261220.KS,부가 구성
+TIGER원유선물인버스(H),"2,685","26,297",원유(Oil),217770,217770.KS,부가 구성
+RISE팔라듐선물인버스(H),"3,645","5,369",팔라듐(Palladium),334700,334700.KS,부가 구성
+RISE팔라듐선물(H),"7,125","11,885",팔라듐(Palladium),334690,334690.KS,부가 구성
+KODEX은선물(H),"8,810","1,065,498",은(Silver),144600,144600.KS,부가 구성
+KODEX금액티브,"12,690","765,928",금(Gold),0064K0,0064K0.KS,기타
+SOL국제금,"12,830","581,281",금(Gold),0066W0,0066W0.KS,기타
+TIGER구리실물,"13,590","95,657",구리(Copper),160580,160580.KS,기타
+SPDR Gold Shares,-,-,금(Gold),-,GLD,기본 구성
+iShares Silver Trust,-,-,은(Silver),-,SLV,기본 구성
+United States Oil Fund,-,-,원유(Crude Oil),-,USO,부가 구성
+Invesco DB Commodity Index Tracking Fund,-,-,종합(Commodities),-,DBC,기본 구성
+iShares GSCI Commodity-Indexed Trust,-,-,종합(Commodities),-,GSG,부가 구성
+Invesco DB Agriculture Fund,-,-,농산물(Agriculture),-,DBA,부가 구성
