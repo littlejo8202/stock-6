@@ -26,31 +26,17 @@ function Traditional() {
             return;
         }
 
-        try {
-            const response = await fetch(
-                "https://backtesting-t1xh.onrender.com/api/backtest",
-                {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ 
-                        themes: selectedThemes,
-                        period: "1m"
-                    }),
-                }
-            );
+        // --- (수정) API 호출 로직 '삭제' ---
+        // try { ... fetch ... } 부분을 모두 삭제
 
-            const data = await response.json();
-
-            navigate('/portfolio', { state: { portfolioData: data } });
-        } catch (err) {
-            console.error(err);
-        }        
+        // --- (수정) 'portfolioData' 대신 'themes'를 넘김 ---
+        navigate('/portfolio', { state: { themes: selectedThemes } });
     };
 
     return (
         <>
             <Helmet>
-                <meta charset="UTF-8" />
+                <meta charSet="UTF-Example" /> {/* "charset" 오타 수정 */}
                 <title>테마 선택</title>
             </Helmet>
             <div className="result-container">
@@ -60,7 +46,8 @@ function Traditional() {
 
                 <div className="theme-container">
                     <h2>전통 성향의 테마 ETF 목록</h2>
-                    <div class="theme-button-container">
+                     {/* (수정) 'class=' -> 'className='으로 변경 (React 문법 오류 수정) */}
+                    <div className="theme-button-container">
                         {themes.map((theme, index) => (
                             <button
                                 key={index}
