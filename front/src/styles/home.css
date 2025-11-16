@@ -24,7 +24,7 @@ html, body, #root {
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
-    margin-top: 380px;
+    margin-top: 18%;
     margin-bottom: 20px;
     letter-spacing: 3px;
 }
