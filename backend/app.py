@@ -2,12 +2,13 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 import pandas as pd
 import os
-import yfinance as yf # 야후 파이낸스 라이브러리
-from datetime import date, timedelta # 날짜 처리를 위함
-import numpy as np
-from scipy.optimize import minimize
+import yfinance as yf
+from datetime import date, timedelta
+import numpy as np  # <-- (1) 위험성 계산을 위해 numpy 추가
+
 # --- 기본 설정 ---
 app = Flask(__name__)
+# (CORS 설정: /api/ 경로의 모든 요청을 모든 도메인(*)에서 허용)
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 DATA_DIR = os.path.join(os.path.dirname(__file__), 'data')
 
@@ -23,7 +24,6 @@ try:
     # 1-2. 원자재 ETF 로드
     commodities_path = os.path.join(DATA_DIR, '원자재ETF.csv')
     df_commodities = pd.read_csv(commodities_path)
-    # '포트폴리오_구분'이 '기본 구성'인 행의 'YAHOO_TICKER'만 추출
     base_commodities = df_commodities[
         df_commodities['포트폴리오_구분'] == '기본 구성'
     ]['YAHOO_TICKER'].tolist()
@@ -33,7 +33,6 @@ try:
     # 1-3. 채권 ETF 로드
     bonds_path = os.path.join(DATA_DIR, '채권ETF.csv')
     df_bonds = pd.read_csv(bonds_path)
-    # '포트폴리오_구분'이 '기본 구성'인 행의 'YAHOO_TICKER'만 추출
     base_bonds = df_bonds[
         df_bonds['포트폴리오_구분'] == '기본 구성'
     ]['YAHOO_TICKER'].tolist()
@@ -47,7 +46,7 @@ try:
 except FileNotFoundError as e:
     print(f"--- 서버 시작 오류: 필수 CSV 파일을 'backend/data/' 폴더에서 찾을 수 없습니다. ---")
     print(f"오류 파일: {e.filename}")
-    df_theme_etf = pd.DataFrame() # 비어있는 DataFrame으로 초기화
+    df_theme_etf = pd.DataFrame() 
 except Exception as e:
     print(f"--- 서버 시작 중 CSV 로드 오류 발생: {e} ---")
     df_theme_etf = pd.DataFrame()
@@ -55,7 +54,6 @@ except Exception as e:
 
 # --- 2. '번역기' 딕셔너리 생성 ---
 theme_name_translator = {
-    # (이전과 동일)
     "자동화 인공지능": ["AI / 반도체", "인공지능", "로봇/산업"],
     "친환경 에너지": ["ESG", "에너지"],
     "원자력": ["에너지"],
@@ -82,7 +80,6 @@ print("--- 서버 준비 완료: 테마 이름 매핑(번역기) 생성 완료 -
 
 # --- 3. 기간(period)을 실제 날짜로 변환하는 헬퍼 함수 ---
 def get_period_dates(period_str):
-    # (이전과 동일)
     end_date = date.today()
     if period_str == "1w": # 1주일
         start_date = end_date - timedelta(weeks=1)
@@ -102,75 +99,6 @@ def get_period_dates(period_str):
 @app.route('/api/test', methods=['GET'])
 def test_api():
     return jsonify({ "message": "백엔드 서버가 응답합니다!" })
-# --- 자산 비중 계산 모듈 ---
-def get_equal_weight(n):
-    return np.ones(n) / n
-
-def get_mvp_weight(returns):
-    cov = returns.cov()
-    n = len(cov)
-    w0 = np.ones(n) / n
-
-    def var(w):
-        return w.T @ cov @ w
-
-    res = minimize(var, w0, bounds=[(0,1)]*n,
-                   constraints={'type':'eq','fun':lambda w: w.sum()-1})
-    return res.x
-
-def get_risk_parity_weight(returns):
-    cov = returns.cov()
-    n = len(cov)
-
-    def loss(w):
-        mrc = cov @ w
-        rc = w * mrc
-        return ((rc - rc.mean())**2).sum()
-
-    w0 = np.ones(n)/n
-    res = minimize(loss, w0, bounds=[(0,1)]*n,
-                   constraints={'type':'eq','fun':lambda w: w.sum()-1})
-    return res.x
-
-def get_max_sharpe_weight(returns):
-    mu = returns.mean()
-    cov = returns.cov()
-    n = len(mu)
-
-    def neg_sharpe(w):
-        ret = w @ mu
-        vol = np.sqrt(w.T @ cov @ w)
-        return -(ret / vol)
-
-    w0 = np.ones(n)/n
-    res = minimize(neg_sharpe, w0, bounds=[(0,1)]*n,
-                   constraints={'type':'eq','fun':lambda w: w.sum()-1})
-    return res.x
-
-# --- 자산 비중 분산 기반 전략 선택 --- 
-
-def select_most_diversified_strategy(returns):
-    strategies = {
-        "equal": lambda: get_equal_weight(returns.shape[1]),
-        "mvp": lambda: get_mvp_weight(returns),
-        "risk_parity": lambda: get_risk_parity_weight(returns),
-        "max_sharpe": lambda: get_max_sharpe_weight(returns)
-    }
-    
-    best_name = None
-    best_w = None
-    lowest_w_var = float("inf")
-
-    for name, fn in strategies.items():
-        w = fn()
-        w_var = np.var(w)   # 자산배분의 분산
-
-        if w_var < lowest_w_var:
-            best_name = name
-            lowest_w_var = w_var
-            best_w = w
-
-    return best_name, best_w
 
 # --- API 2: 핵심 백테스팅 API (기본 자산 섞는 로직 추가) ---
 @app.route('/api/backtest', methods=['POST'])
@@ -190,19 +118,17 @@ def handle_backtest():
         print(f"프론트엔드 테마: {frontend_themes}")
         print(f"선택된 기간: {period}")
         
-        # --- 4. 매핑(번역기)을 사용하여 '테마' 티커 찾기 ---
+        # --- 4. '테마' 티커 찾기 ---
         theme_tickers = []
         for fe_theme in frontend_themes:
             csv_theme_names = theme_name_translator.get(fe_theme) 
             if not csv_theme_names:
                 print(f"경고: '{fe_theme}'에 대한 매핑이 없습니다. 건너뜁니다.")
                 continue
-
             matching_rows = df_theme_etf[
                 (df_theme_etf['테마'].isin(csv_theme_names)) &
                 (df_theme_etf['대표여부'] == 'O')
             ]
-            
             if not matching_rows.empty:
                 ticker = matching_rows.iloc[0]['YAHOO_TICKER']
                 theme_tickers.append(ticker)
@@ -212,21 +138,15 @@ def handle_backtest():
 
         if not theme_tickers:
              return jsonify({"error": "선택된 테마에 해당하는 유효한 ETF 티커를 찾지 못했습니다."}), 400
-
         print(f"--- 변환된 '테마' 티커 리스트: {theme_tickers} ---")
         
-        # --- 5. (!! 로직 추가 !!) '테마' 티커와 '기본 자산' 티커 합치기 ---
-        # (set을 사용하여 중복 자동 제거 후 다시 list로 변환)
+        # --- 5. '테마' 티커와 '기본 자산' 티커 합치기 ---
         final_tickers = list(set(theme_tickers + base_asset_tickers))
-        
         print(f"--- '기본 자산' 포함 최종 티커 리스트: {final_tickers} ---")
         
         # --- 6. yfinance로 실제 데이터 가져오기 및 백테스팅 ---
-        
-        # 6-1. 기간 설정
         start_date, end_date = get_period_dates(period)
         
-        # 6-2. yfinance API 호출 (!! final_tickers로 변경 !!)
         print(f"yfinance 데이터 다운로드 중... (티커: {final_tickers}, 기간: {start_date} ~ {end_date})")
         raw_data = yf.download(final_tickers, start=start_date, end=end_date, auto_adjust=False, actions=False)
 
@@ -234,48 +154,43 @@ def handle_backtest():
             print("yfinance에서 데이터를 가져오지 못했습니다.")
             return jsonify({"error": "yfinance에서 데이터를 가져오지 못했습니다."}), 500
 
-        # 6-3. '종가(Close)' 데이터만 추출
         close_data = raw_data['Close']
-        
         if isinstance(close_data, pd.Series):
-            # (만약 최종 티커가 1개일 경우를 대비한 방어 코드)
             close_data = close_data.to_frame(name=final_tickers[0])
 
-        # 6-4. (중요) 데이터 정제: 비어있는 값(NaN) 채우기
         close_data = close_data.ffill().bfill() 
-        returns = close_data.pct_change().dropna()
-
-        # ------- 전략 선택 (핵심) -------
-        method, weights = select_most_diversified_strategy(returns)
-        
-        # ------- 포트폴리오 계산 -------
-        normalized = (close_data / close_data.iloc[0]) * 100
-        portfolio = (normalized * weights).sum(axis=1)
+        normalized_data = (close_data / close_data.iloc[0]) * 100
+        portfolio_series = normalized_data.mean(axis=1)
 
         # 6-7. 최종 수익률 계산
-        total_return_pct = (portfolio.iloc[-1] / portfolio.iloc[0] - 1) * 100
+        total_return_pct = (portfolio_series.iloc[-1] / portfolio_series.iloc[0] - 1) * 100
 
+        # --- (2) 위험성(Risk) 계산 로직 추가 ---
+        # 일일 수익률 계산 (첫날 NaN은 제거)
+        daily_returns = portfolio_series.pct_change().dropna()
+        # 일일 수익률의 표준편차(위험) 계산
+        daily_std = daily_returns.std()
+        # 연율화된 위험(Risk) 계산 (1년 거래일 약 252일)
+        annualized_risk = daily_std * np.sqrt(252)
+        
         # --- 7. 프론트엔드가 원하는 JSON 형식으로 응답 데이터 가공 ---
         response_data = {
-            "dates": portfolio.index.strftime('%Y-%m-%d').tolist(),
-            "values": portfolio.round(2).tolist(),
-            "totalReturn": f"{total_return_pct:.2f}%"
+            "dates": portfolio_series.index.strftime('%Y-m-%d').tolist(),
+            "values": portfolio_series.round(2).tolist(),
+            "totalReturn": f"{total_return_pct:.2f}%",
+            "risk": f"{annualized_risk * 100:.2f}%"  # <-- (3) 응답에 risk 추가
         }
         
-        print(f"백테스팅 성공. 총 수익률: {total_return_pct:.2f}%")
+        print(f"백테스팅 성공. 총 수익률: {total_return_pct:.2f}%, 위험성: {annualized_risk * 100:.2f}%")
         
-        # 8. JSON 형태로 응답 반환
         return jsonify(response_data)
 
     except Exception as e:
-        # 9. 로직 실행 중 오류가 나면
         print(f"!!! 에러 발생: {e} !!!")
         import traceback
         traceback.print_exc() 
         return jsonify({"error": "서버 내부 오류가 발생했습니다.", "details": str(e)}), 500
 
-
 # --- 서버 실행 ---
 if __name__ == '__main__':
-
     app.run(port=5000, debug=True)
