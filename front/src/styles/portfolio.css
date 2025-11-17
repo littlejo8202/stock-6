@@ -115,3 +115,29 @@
 .nav-btn-op:hover {
     background-color: #59aaf5;
 }
+
+.view-mode-buttons {
+    display: flex;
+    gap: 15px;
+}
+
+.view-btn {
+    background-color: #222;
+    color: white;
+    border: 1px solid #555;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.view-btn:hover {
+    background-color: #444;
+}
+
+.view-btn.active {
+    background-color: #3395ff; 
+    color: black;
+    border-color: #3395ff;
+}
