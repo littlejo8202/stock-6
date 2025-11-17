@@ -45,7 +45,6 @@ function Traditional() {
 
                 <div className="theme-container">
                     <h2>전통 성향의 테마 ETF 목록</h2>
-                     {/* (수정) 'class=' -> 'className=' */}
                     <div className="theme-button-container">
                         {themes.map((theme, index) => (
                             <button
