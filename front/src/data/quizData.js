@@ -67,7 +67,7 @@ export const quizData = [
         answer: null
     },
     {
-        question: "Q7 : 향후 3개월 투자 투자손실에 대한 당신의 생각은?",
+        question: "Q7 : 향후 3개월 투자시 투자손실에 대한 당신의 생각은?",
         choices: [
             { text: "1️⃣ 시장변화에 크게 신경 쓰지 않는다.", score: 1 },
             { text: "2️⃣ 20% 이상 손실발생 걱정한다.", score: 2 },
