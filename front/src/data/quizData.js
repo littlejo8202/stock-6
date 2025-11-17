@@ -45,7 +45,7 @@ export const quizData = [
         answer: null
     },
     {
-        question: "Q5 : 향후 10년전 주식시장 침체가 예상될 때 나의 투자성과는?",
+        question: "Q5 : 향후 10년간 주식시장 침체가 예상될 때 나의 투자성과는?",
         choices: [
             { text: "1️⃣ 부진할 수 있다", score: 1 },
             { text: "2️⃣ 원금 수준은 유지해야 한다", score: 2 },
