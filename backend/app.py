@@ -113,13 +113,12 @@ def test_api():
     return jsonify({ "message": "백엔드 서버가 응답합니다!" })
 
 # --- API 2: 핵심 백테스팅 API (CORS 문제 수정) ---
-@app.route('/api/backtest', methods=['POST', 'OPTIONS']) # (OPTIONS 추가됨)
+@app.route('/api/backtest', methods=['POST', 'OPTIONS']) # (CORS 해결을 위해 'OPTIONS' 추가)
 def handle_backtest():
     
     # --- (!! CORS 최종 수정 !!) ---
     # 브라우저가 보내는 'OPTIONS' (사전) 요청을 먼저 처리하고 200 OK를 반환
     if request.method == 'OPTIONS':
-        # flask-cors가 헤더를 자동으로 추가해줄 빈 응답을 보냄
         return jsonify({"message": "CORS preflight request successful"}), 200
     # --- (!! 수정 완료 !!) ---
 
@@ -162,7 +161,6 @@ def handle_backtest():
         print(f"--- 변환된 '테마' 티커 리스트: {theme_tickers} ---")
         
         # --- 5. '테마' 티커와 '기본 자산' 티커 합치기 ---
-        # (수정) 기본 자산이 0개일 경우를 대비 (예: CSV 로드 실패)
         safe_base_tickers = base_asset_tickers if base_asset_tickers else []
         final_tickers = list(set(theme_tickers + safe_base_tickers))
         print(f"--- '기본 자산' 포함 최종 티커 리스트: {final_tickers} ---")
@@ -185,17 +183,12 @@ def handle_backtest():
         normalized_data = (close_data / close_data.iloc[0]) * 100
         
         # --- (!! 70:30 비중 수정 !!) ---
-        # 1. '테마' 종목들만 1/n로 섞어서 '테마 포트폴리오'를 만듦
         theme_portfolio = normalized_data[theme_tickers].mean(axis=1)
         
-        # 2. '기본 자산' 종목들만 1/n로 섞어서 '기본 자산 포트폴리오'를 만듦
-        # (수정) 기본 자산이 0개일 경우를 대비하여 방어 코드 추가
         if safe_base_tickers:
             base_portfolio = normalized_data[safe_base_tickers].mean(axis=1)
-            # 3. 두 포트폴리오를 70:30으로 섞어서 최종 포트폴리오를 만듦
             portfolio_series = (theme_portfolio * 0.7) + (base_portfolio * 0.3)
         else:
-            # 기본 자산이 없으면 테마 100%
             portfolio_series = theme_portfolio 
         # --- (!! 70:30 비율로 수정 완료 !!) ---
 
@@ -211,7 +204,7 @@ def handle_backtest():
             "totalReturn": f"{total_return_pct:.2f}%",
             "maxDrawdown": {
                 "value": mdd_value,
-                "date": mMdd_date
+                "date": mdd_date # <-- (!! 'mMdd_date' 오타 수정 완료 !!)
             },
             "drawdownSeries": dd_series.tolist(),
             "rollingVolatilitySeries": rolling_vol_series.tolist(),
