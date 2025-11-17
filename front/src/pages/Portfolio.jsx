@@ -199,7 +199,6 @@ function Portfolio() {
                                 <XAxis dataKey="date" tickFormatter={formatDateTick} />
                                 <YAxis 
                                     domain={['auto', 0]} // (Drawdown은 항상 0 이하)
-                                    unit="%" 
                                     tickFormatter={formatPercentTick} 
                                 />
                                 <Tooltip formatter={formatPercentTooltip} />
@@ -215,7 +214,6 @@ function Portfolio() {
                                 <XAxis dataKey="date" tickFormatter={formatDateTick} />
                                 <YAxis 
                                     domain={['auto', 'auto']} 
-                                    unit="%" 
                                     tickFormatter={formatPercentTick} 
                                 />
                                 <Tooltip formatter={formatPercentTooltip} />
@@ -236,9 +234,9 @@ function Portfolio() {
 
                     {/* (수정) 벡엔드 새 데이터 형식에 맞춤 */}
                     <div className="profit-text" id="profitText">
-                        해당 포트폴리오의 {periods[selectedPeriod]} 
-                        수익률은 <b> {portfolioData.totalReturn}</b>이며,
-                        최대 손실(MDD)은 <b> {portfolioData.maxDrawdown.value}</b>입니다.
+                        해당 포트폴리오의 {periods[selectedPeriod]}&nbsp;
+                        수익률은 <span className="return-span">{portfolioData.totalReturn}</span>이며,&nbsp;
+                        최대 손실(MDD)은 <span className="risk-span">{portfolioData.maxDrawdown.value}</span>입니다.
                     </div>
                 </div>
 

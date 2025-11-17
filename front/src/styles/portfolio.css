@@ -141,3 +141,13 @@
     color: black;
     border-color: #3395ff;
 }
+
+.return-span {
+    font-weight: bold;
+    color: #3caf40; 
+}
+
+.risk-span {
+    font-weight: bold;
+    color: #f44336; 
+}
