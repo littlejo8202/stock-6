@@ -27,16 +27,14 @@ function Innovation() {
         }
 
         // --- (수정) API 호출 로직 '삭제' ---
-        // try { ... fetch ... } 부분을 모두 삭제
-
-        // --- (수정) 'portfolioData' 대신 'themes'를 넘김 ---
+        // 'themes'만 Portfolio 페이지로 넘깁니다.
         navigate('/portfolio', { state: { themes: selectedThemes } });
     };
 
     return (
         <>
             <Helmet>
-                <meta charSet="UTF-Example" /> {/* "charset" 오타 수정 */}
+                <meta charSet="UTF-8" />
                 <title>테마 선택</title>
             </Helmet>
             <div className="result-container">
@@ -46,7 +44,6 @@ function Innovation() {
 
                 <div className="theme-container">
                     <h2>혁신 테마 ETF 목록</h2>
-                    {/* (수정) 'class=' -> 'className='으로 변경 (React 문법 오류 수정) */}
                     <div className="theme-button-container"> 
                         {themes.map((theme, index) => (
                             <button
