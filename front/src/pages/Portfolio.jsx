@@ -33,7 +33,7 @@ function Portfolio() {
     const navigate = useNavigate();
 
     // (수정) 'portfolioData'가 아닌 'themes'를 받음
-    const { themes } = location.state || {};
+    const { themes, themeType } = location.state || {};
     
     // API 데이터를 관리할 새로운 상태(State)들 추가
     const [selectedPeriod, setSelectedPeriod] = useState("1m"); // 기간 버튼 상태
@@ -89,11 +89,8 @@ function Portfolio() {
 
     
     const handleOppositeTheme = () => {
-        if (location.pathname.includes('innovation')) {
-            navigate('/traditional');
-        } else {
-            navigate('/innovation');
-        }
+        const opposite = themeType === 'innovation' ? 'traditional' : 'innovation';
+        navigate(`/${opposite}`);
     }
 
     // --- 로딩, 에러, 데이터 없음 상태에 따라 다른 화면 표시 ---

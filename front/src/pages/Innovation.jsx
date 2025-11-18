@@ -28,7 +28,12 @@ function Innovation() {
 
         // --- (수정) API 호출 로직 '삭제' ---
         // 'themes'만 Portfolio 페이지로 넘깁니다.
-        navigate('/portfolio', { state: { themes: selectedThemes } });
+        navigate('/portfolio', { 
+            state: { 
+                themes: selectedThemes,
+                themeType: 'innovation' 
+            } 
+        });
     };
 
     return (
