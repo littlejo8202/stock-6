@@ -98,7 +98,7 @@ def calculate_drawdown(portfolio_series):
     return (dd_series * 100).round(2).fillna(0), f"{mdd * 100:.2f}%", mdd_date.strftime('%Y-%m-%d')
 
 # --- [새 기능 2] Rolling Volatility 계산 함수 ---
-ROLLING_WINDOW = 30 # 30일 이동 변동성
+ROLLING_WINDOW = 5 # 5일 이동 변동성
 def calculate_rolling_volatility(portfolio_series, window=ROLLING_WINDOW):
     daily_returns = portfolio_series.pct_change()
     rolling_std = daily_returns.rolling(window=window).std()
@@ -223,3 +223,4 @@ def handle_backtest():
 # --- 서버 실행 ---
 if __name__ == '__main__':
     app.run(port=5000, debug=True)
+
