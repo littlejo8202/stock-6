@@ -4,7 +4,7 @@
 ### 1. 폴더 구조
    - 'backend' - data (사용한 데이터들), app.py (백엔드 코드)
    - 'front/src' - data (설문 내용), pages (프론트엔드 코드), styles (css)
-   - 
+     
 ### 2. 역할
    - 고수민 202034503 : 프론트엔드 UI/UX 기능 구현
    - 금준하 202134704 : UI/UX 디자인 및 HTML, CSS 제작
