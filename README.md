@@ -8,4 +8,5 @@
    - 조민혁 202337665 : 백엔드 구현 및 서버 운영
 
 ### 2. 폴더 구조
-   - 'backend' -
+   - 'backend' - data (사용한 데이터들), app.py (백엔드 코드)
+   - 'front/src' - data (설문 내용), pages (프론트엔드 코드), styles (css)
